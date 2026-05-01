@@ -3,7 +3,7 @@ _here = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(_here))
 sys.path.insert(0, _here)
 
-from _utils import BaseHandler, resolve_provider
+from _api_utils import BaseHandler, resolve_provider
 from prompt_generator import run_improve
 
 

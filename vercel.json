@@ -10,7 +10,7 @@
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "50mb",
-        "includeFiles": ["prompt_generator.py", "api/_utils.py"]
+        "includeFiles": ["prompt_generator.py", "_api_utils.py"]
       }
     }
   ]
