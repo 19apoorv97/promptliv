@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -14,12 +15,20 @@ if _env_path.exists():
                 _k, _, _v = _line.partition("=")
                 os.environ.setdefault(_k.strip(), _v.strip())
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 
-from prompt_generator import PROVIDERS, build_provider, run_generate, run_improve, get_clarifying_questions
+from prompt_generator import (
+    PROVIDERS,
+    AnthropicProvider,
+    OpenAICompatibleProvider,
+    build_provider,
+    run_generate,
+    run_improve,
+    get_clarifying_questions,
+)
 
 app = FastAPI(title="Prompt Generator API")
 
@@ -31,6 +40,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ---------------------------------------------------------------------------
+# IP-based rate limiter: 20 requests per hour (free-tier only)
+# ---------------------------------------------------------------------------
+_rate_limit: dict[str, tuple[int, float]] = {}
+_RATE_LIMIT_MAX = 20
+_RATE_LIMIT_WINDOW = 3600  # seconds
+
+
+def _check_rate_limit(ip: str) -> None:
+    now = time.time()
+    if ip in _rate_limit:
+        count, window_start = _rate_limit[ip]
+        if now - window_start < _RATE_LIMIT_WINDOW:
+            if count >= _RATE_LIMIT_MAX:
+                raise HTTPException(status_code=429, detail="rate_limited")
+            _rate_limit[ip] = (count + 1, window_start)
+        else:
+            _rate_limit[ip] = (1, now)
+    else:
+        _rate_limit[ip] = (1, now)
+
+
+# ---------------------------------------------------------------------------
+# Request models
+# ---------------------------------------------------------------------------
 
 class ClarifyRequest(BaseModel):
     provider: str
@@ -38,6 +72,8 @@ class ClarifyRequest(BaseModel):
     task_or_prompt: str
     mode: str  # "generate" or "improve"
     base_url: Optional[str] = None
+    byok_key: Optional[str] = None
+    byok_provider: Optional[str] = None
 
 
 class GenerateRequest(BaseModel):
@@ -46,6 +82,8 @@ class GenerateRequest(BaseModel):
     task: str
     context: Optional[str] = ""
     base_url: Optional[str] = None
+    byok_key: Optional[str] = None
+    byok_provider: Optional[str] = None
 
 
 class ImproveRequest(BaseModel):
@@ -55,9 +93,38 @@ class ImproveRequest(BaseModel):
     feedback: Optional[str] = ""
     context: Optional[str] = ""
     base_url: Optional[str] = None
+    byok_key: Optional[str] = None
+    byok_provider: Optional[str] = None
 
 
-def _resolve(provider_key: str, model_override: Optional[str], base_url: Optional[str]):
+# ---------------------------------------------------------------------------
+# Provider resolution
+# ---------------------------------------------------------------------------
+
+def _resolve(
+    provider_key: str,
+    model_override: Optional[str],
+    base_url: Optional[str],
+    byok_key: Optional[str] = None,
+    byok_provider: Optional[str] = None,
+):
+    if byok_key:
+        effective = byok_provider or provider_key
+        if effective not in PROVIDERS:
+            raise HTTPException(status_code=400, detail=f"Unknown BYOK provider: {effective}")
+
+        cfg = PROVIDERS[effective]
+        model = model_override or cfg.get("default_model", "")
+        if not model:
+            raise HTTPException(status_code=400, detail="No model specified and provider has no default model.")
+
+        if effective == "anthropic":
+            return AnthropicProvider(byok_key), model
+
+        url = base_url or cfg.get("base_url")
+        return OpenAICompatibleProvider(byok_key, url), model
+
+    # No BYOK key — use server-side env vars
     if provider_key not in PROVIDERS:
         raise HTTPException(status_code=400, detail=f"Unknown provider: {provider_key}")
 
@@ -78,14 +145,15 @@ def _resolve(provider_key: str, model_override: Optional[str], base_url: Optiona
 
     model = model_override or cfg.get("default_model", "")
     if not model:
-        raise HTTPException(
-            status_code=400,
-            detail="No model specified and provider has no default model.",
-        )
+        raise HTTPException(status_code=400, detail="No model specified and provider has no default model.")
 
     provider_instance, _ = build_provider(provider_key, base_url)
     return provider_instance, model
 
+
+# ---------------------------------------------------------------------------
+# Endpoints
+# ---------------------------------------------------------------------------
 
 @app.get("/api/providers")
 def get_providers():
@@ -93,9 +161,11 @@ def get_providers():
 
 
 @app.post("/api/clarify")
-def clarify(req: ClarifyRequest):
+def clarify(req: ClarifyRequest, request: Request):
     try:
-        provider_instance, model = _resolve(req.provider, req.model, req.base_url)
+        if not req.byok_key:
+            _check_rate_limit(request.client.host)
+        provider_instance, model = _resolve(req.provider, req.model, req.base_url, req.byok_key, req.byok_provider)
         questions = get_clarifying_questions(provider_instance, model, req.task_or_prompt, req.mode)
         return {"questions": questions}
     except HTTPException:
@@ -105,9 +175,11 @@ def clarify(req: ClarifyRequest):
 
 
 @app.post("/api/generate")
-def generate(req: GenerateRequest):
+def generate(req: GenerateRequest, request: Request):
     try:
-        provider_instance, model = _resolve(req.provider, req.model, req.base_url)
+        if not req.byok_key:
+            _check_rate_limit(request.client.host)
+        provider_instance, model = _resolve(req.provider, req.model, req.base_url, req.byok_key, req.byok_provider)
         result = run_generate(provider_instance, model, req.task, context=req.context or "", silent=True)
         return {"result": result}
     except HTTPException:
@@ -117,9 +189,11 @@ def generate(req: GenerateRequest):
 
 
 @app.post("/api/improve")
-def improve(req: ImproveRequest):
+def improve(req: ImproveRequest, request: Request):
     try:
-        provider_instance, model = _resolve(req.provider, req.model, req.base_url)
+        if not req.byok_key:
+            _check_rate_limit(request.client.host)
+        provider_instance, model = _resolve(req.provider, req.model, req.base_url, req.byok_key, req.byok_provider)
         result = run_improve(provider_instance, model, req.prompt, req.feedback or "", context=req.context or "", silent=True)
         return {"result": result}
     except HTTPException:

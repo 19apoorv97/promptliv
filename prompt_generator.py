@@ -11,7 +11,7 @@ Providers:
   anthropic  — Uses ANTHROPIC_API_KEY  (default model: claude-opus-4-7)
   openai     — Uses OPENAI_API_KEY     (default model: gpt-4o)
   groq       — Uses GROQ_API_KEY       (default model: llama-3.3-70b-versatile)
-  gemini     — Uses GOOGLE_API_KEY     (default model: gemini-2.5-pro-preview-03-25)
+  gemini     — Uses GOOGLE_API_KEY     (default model: gemini-2.5-flash)
   custom     — Uses CUSTOM_API_KEY + --base-url (any OpenAI-compatible endpoint)
 """
 
@@ -135,7 +135,7 @@ PROVIDERS = {
     },
     "gemini": {
         "env_key": "GOOGLE_API_KEY",
-        "default_model": "gemini-2.0-flash",
+        "default_model": "gemini-2.5-flash",
         "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
         "label": "Google Gemini",
     },
