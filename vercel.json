@@ -13,5 +13,12 @@
         "includeFiles": ["prompt_generator.py", "_api_utils.py"]
       }
     }
+  ],
+  "routes": [
+    { "src": "/api/providers", "dest": "/api/providers" },
+    { "src": "/api/clarify",   "dest": "/api/clarify"   },
+    { "src": "/api/generate",  "dest": "/api/generate"  },
+    { "src": "/api/improve",   "dest": "/api/improve"   },
+    { "src": "/(.*)",          "dest": "/frontend/$1"   }
   ]
 }
