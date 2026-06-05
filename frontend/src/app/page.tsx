@@ -139,6 +139,49 @@ const LS_PROVIDER = "promptliv-byok-provider";
 const STEPS: Step[] = ["input", "clarifying", "result"];
 const STEP_LABELS = ["Input", "Questions", "Result"];
 
+function ScrollReveal({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.style.opacity = "1";
+          el.style.transform = "translateY(0)";
+          observer.unobserve(el);
+        }
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: 0,
+        transform: "translateY(28px)",
+        transition: `opacity 0.65s ease-out ${delay}ms, transform 0.65s ease-out ${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function Home() {
   const [mode, setMode] = useState<Mode>("generate");
   const [step, setStep] = useState<Step>("input");
@@ -508,7 +551,8 @@ export default function Home() {
         </div>
       )}
 
-      <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-950 to-gray-900">
+      <div className="h-screen overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
+        <section className="min-h-screen snap-start bg-gradient-to-b from-gray-950 via-gray-950 to-gray-900">
         <main className="max-w-2xl mx-auto px-4 py-12">
           {/* Header */}
           <div className="mb-8 flex items-start justify-between gap-4">
@@ -910,78 +954,90 @@ export default function Home() {
             )}
           </div>
         </main>
+        </section>
 
         {/* ── SEO CONTENT SECTIONS ── */}
-        <div className="border-t border-gray-800/60">
+        <section className="min-h-screen snap-start bg-gray-950 border-t border-gray-800/60">
           <div className="max-w-4xl mx-auto px-4 py-16 space-y-20">
 
             {/* What is a Prompt Generator */}
-            <section>
-              <h2 className="text-2xl font-bold text-white mb-4">
-                What is an AI Prompt Generator?
-              </h2>
-              <p className="text-gray-400 leading-relaxed max-w-2xl">
-                A <strong className="text-gray-200">prompt generator</strong> is a tool that uses{" "}
-                <strong className="text-gray-200">prompt engineering</strong> techniques to craft
-                precise, structured instructions for AI models. Instead of guessing what to type,
-                describe your goal in plain English — Promptliv asks a few clarifying questions and
-                builds an optimized prompt ready to paste into any AI.
-              </p>
-            </section>
+            <ScrollReveal>
+              <section>
+                <h2 className="text-2xl font-bold text-white mb-4">
+                  What is an AI Prompt Generator?
+                </h2>
+                <p className="text-gray-400 leading-relaxed max-w-2xl">
+                  A <strong className="text-gray-200">prompt generator</strong> is a tool that uses{" "}
+                  <strong className="text-gray-200">prompt engineering</strong> techniques to craft
+                  precise, structured instructions for AI models. Instead of guessing what to type,
+                  describe your goal in plain English — Promptliv asks a few clarifying questions and
+                  builds an optimized prompt ready to paste into any AI.
+                </p>
+              </section>
+            </ScrollReveal>
 
             {/* Use Cases */}
             <section>
-              <h2 className="text-2xl font-bold text-white mb-2">
-                Prompt Generator for Every Use Case
-              </h2>
-              <p className="text-gray-500 text-sm mb-8">One tool. Every AI. Every format.</p>
+              <ScrollReveal>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  Prompt Generator for Every Use Case
+                </h2>
+                <p className="text-gray-500 text-sm mb-8">One tool. Every AI. Every format.</p>
+              </ScrollReveal>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {USE_CASES.map((uc) => (
-                  <div
-                    key={uc.title}
-                    className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-indigo-500/40 transition-colors"
-                  >
-                    <div className="text-2xl mb-3">{uc.icon}</div>
-                    <h3 className="text-sm font-semibold text-white mb-1.5">{uc.title}</h3>
-                    <p className="text-xs text-gray-500 leading-relaxed">{uc.description}</p>
-                  </div>
+                {USE_CASES.map((uc, i) => (
+                  <ScrollReveal key={uc.title} delay={i * 80}>
+                    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-indigo-500/40 transition-colors h-full">
+                      <div className="text-2xl mb-3">{uc.icon}</div>
+                      <h3 className="text-sm font-semibold text-white mb-1.5">{uc.title}</h3>
+                      <p className="text-xs text-gray-500 leading-relaxed">{uc.description}</p>
+                    </div>
+                  </ScrollReveal>
                 ))}
               </div>
             </section>
 
             {/* How It Works */}
             <section>
-              <h2 className="text-2xl font-bold text-white mb-8">How It Works</h2>
+              <ScrollReveal>
+                <h2 className="text-2xl font-bold text-white mb-8">How It Works</h2>
+              </ScrollReveal>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {HOW_IT_WORKS.map((step, i) => (
-                  <div key={i} className="flex gap-4">
-                    <div className="shrink-0 h-8 w-8 rounded-full bg-indigo-600 text-white text-sm font-bold flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                      {i + 1}
+                  <ScrollReveal key={i} delay={i * 100}>
+                    <div className="flex gap-4">
+                      <div className="shrink-0 h-8 w-8 rounded-full bg-indigo-600 text-white text-sm font-bold flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                        {i + 1}
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold text-white mb-1">{step.title}</h3>
+                        <p className="text-xs text-gray-500 leading-relaxed">{step.description}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-white mb-1">{step.title}</h3>
-                      <p className="text-xs text-gray-500 leading-relaxed">{step.description}</p>
-                    </div>
-                  </div>
+                  </ScrollReveal>
                 ))}
               </div>
             </section>
 
             {/* FAQ */}
             <section>
-              <h2 className="text-2xl font-bold text-white mb-8">Frequently Asked Questions</h2>
+              <ScrollReveal>
+                <h2 className="text-2xl font-bold text-white mb-8">Frequently Asked Questions</h2>
+              </ScrollReveal>
               <div className="space-y-4">
-                {FAQ_ITEMS.map((item) => (
-                  <div key={item.q} className="border border-gray-800 rounded-xl p-5">
-                    <h3 className="text-sm font-semibold text-white mb-2">{item.q}</h3>
-                    <p className="text-sm text-gray-500 leading-relaxed">{item.a}</p>
-                  </div>
+                {FAQ_ITEMS.map((item, i) => (
+                  <ScrollReveal key={item.q} delay={i * 60}>
+                    <div className="border border-gray-800 rounded-xl p-5">
+                      <h3 className="text-sm font-semibold text-white mb-2">{item.q}</h3>
+                      <p className="text-sm text-gray-500 leading-relaxed">{item.a}</p>
+                    </div>
+                  </ScrollReveal>
                 ))}
               </div>
             </section>
 
           </div>
-        </div>
+        </section>
 
       </div>
     </>
