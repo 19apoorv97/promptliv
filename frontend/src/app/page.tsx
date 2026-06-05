@@ -47,6 +47,90 @@ const BYOK_PROVIDERS = [
   },
 ];
 
+const USE_CASES = [
+  {
+    icon: "💬",
+    title: "ChatGPT Prompt Generator",
+    description:
+      "Generate structured prompts for GPT-4o and GPT-4 Turbo. Get context-rich instructions that unlock ChatGPT's full potential on any task.",
+  },
+  {
+    icon: "🤖",
+    title: "Claude Prompt Generator",
+    description:
+      "Build XML-structured prompts tailored for Anthropic's Claude. Prompt engineering techniques matched to Claude's reasoning and instruction-following style.",
+  },
+  {
+    icon: "🖼️",
+    title: "Image Prompt Generator",
+    description:
+      "Create detailed visual prompts for DALL·E, Midjourney, Stable Diffusion, and Adobe Firefly. Describe style, lighting, mood, and composition.",
+  },
+  {
+    icon: "🎬",
+    title: "Video Prompt Generator",
+    description:
+      "Craft cinematic scene descriptions for Sora, Runway, Pika, and Kling AI. Specify camera movement, pacing, and visual tone.",
+  },
+  {
+    icon: "📝",
+    title: "Text Prompt Generator",
+    description:
+      "Generate prompts for writing, summarizing, analyzing, and classifying text. Works seamlessly across all major AI models.",
+  },
+  {
+    icon: "🎲",
+    title: "Random Prompt Generator",
+    description:
+      "Not sure where to start? Explore a random prompt for any topic or task — ideal for brainstorming, creativity, and experimentation.",
+  },
+];
+
+const HOW_IT_WORKS = [
+  {
+    title: "Describe your task",
+    description:
+      "Write what you want the AI to do in plain English. No technical prompt engineering knowledge required.",
+  },
+  {
+    title: "Answer a few questions",
+    description:
+      "Promptliv asks targeted clarifying questions to shape the tone, format, and context of your prompt.",
+  },
+  {
+    title: "Get your optimized prompt",
+    description:
+      "Copy your prompt and paste it into ChatGPT, Claude, Gemini, or any other AI model — instantly.",
+  },
+];
+
+const FAQ_ITEMS = [
+  {
+    q: "What is a prompt generator?",
+    a: "A prompt generator is a tool that uses prompt engineering techniques to craft precise, structured instructions for AI models. You describe your goal in plain English and the tool builds an optimized prompt ready to use with any AI.",
+  },
+  {
+    q: "Is Promptliv free to use?",
+    a: "Yes. Promptliv offers 5 free prompt generations with no login required. For unlimited use, connect your own API key from Groq (free tier available), Anthropic, OpenAI, or Google Gemini.",
+  },
+  {
+    q: "Can I use it as a ChatGPT prompt generator?",
+    a: "Absolutely. Promptliv generates structured prompts optimized for ChatGPT (GPT-4o), Claude, Gemini, Groq, and any OpenAI-compatible endpoint. Switch providers anytime.",
+  },
+  {
+    q: "Does it work as an image prompt generator?",
+    a: "Yes. Describe your image concept and Promptliv crafts a detailed visual prompt optimized for DALL·E, Midjourney, Stable Diffusion, and Adobe Firefly.",
+  },
+  {
+    q: "Can I generate video prompts?",
+    a: "Yes. Use Promptliv as a video prompt generator to create scene descriptions and cinematic prompts for Sora, Runway, Pika, and Kling AI.",
+  },
+  {
+    q: "What is prompt engineering?",
+    a: "Prompt engineering is the practice of designing and refining inputs to get the best possible outputs from AI models. Promptliv automates this using Anthropic's published metaprompt framework, asking clarifying questions to build a high-quality prompt for your task.",
+  },
+];
+
 const FREE_LIMIT = 5;
 const LS_COUNT = "promptliv-usage-count";
 const LS_KEY = "promptliv-byok-key";
@@ -434,11 +518,11 @@ export default function Home() {
                   <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
                 </svg>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                  Prompt Generator
+                  AI Prompt Generator
                 </h1>
               </div>
               <p className="text-gray-500 text-sm">
-                Generate and improve AI prompts using your preferred LLM provider.
+                Free prompt generator powered by prompt engineering. Works with ChatGPT, Claude, Gemini &amp; Groq.
               </p>
             </div>
 
@@ -826,6 +910,79 @@ export default function Home() {
             )}
           </div>
         </main>
+
+        {/* ── SEO CONTENT SECTIONS ── */}
+        <div className="border-t border-gray-800/60">
+          <div className="max-w-4xl mx-auto px-4 py-16 space-y-20">
+
+            {/* What is a Prompt Generator */}
+            <section>
+              <h2 className="text-2xl font-bold text-white mb-4">
+                What is an AI Prompt Generator?
+              </h2>
+              <p className="text-gray-400 leading-relaxed max-w-2xl">
+                A <strong className="text-gray-200">prompt generator</strong> is a tool that uses{" "}
+                <strong className="text-gray-200">prompt engineering</strong> techniques to craft
+                precise, structured instructions for AI models. Instead of guessing what to type,
+                describe your goal in plain English — Promptliv asks a few clarifying questions and
+                builds an optimized prompt ready to paste into any AI.
+              </p>
+            </section>
+
+            {/* Use Cases */}
+            <section>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                Prompt Generator for Every Use Case
+              </h2>
+              <p className="text-gray-500 text-sm mb-8">One tool. Every AI. Every format.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {USE_CASES.map((uc) => (
+                  <div
+                    key={uc.title}
+                    className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-indigo-500/40 transition-colors"
+                  >
+                    <div className="text-2xl mb-3">{uc.icon}</div>
+                    <h3 className="text-sm font-semibold text-white mb-1.5">{uc.title}</h3>
+                    <p className="text-xs text-gray-500 leading-relaxed">{uc.description}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* How It Works */}
+            <section>
+              <h2 className="text-2xl font-bold text-white mb-8">How It Works</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {HOW_IT_WORKS.map((step, i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className="shrink-0 h-8 w-8 rounded-full bg-indigo-600 text-white text-sm font-bold flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                      {i + 1}
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-semibold text-white mb-1">{step.title}</h3>
+                      <p className="text-xs text-gray-500 leading-relaxed">{step.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* FAQ */}
+            <section>
+              <h2 className="text-2xl font-bold text-white mb-8">Frequently Asked Questions</h2>
+              <div className="space-y-4">
+                {FAQ_ITEMS.map((item) => (
+                  <div key={item.q} className="border border-gray-800 rounded-xl p-5">
+                    <h3 className="text-sm font-semibold text-white mb-2">{item.q}</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed">{item.a}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+          </div>
+        </div>
+
       </div>
     </>
   );
