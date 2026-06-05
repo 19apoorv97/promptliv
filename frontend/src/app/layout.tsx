@@ -57,6 +57,28 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "Organization",
+      "@id": "https://www.promptliv.com/#organization",
+      name: "Promptliv",
+      url: "https://www.promptliv.com",
+      logo: {
+        "@type": "ImageObject",
+        "@id": "https://www.promptliv.com/#logo",
+        url: "https://www.promptliv.com/web-app-manifest-512x512.png",
+        width: 512,
+        height: 512,
+        caption: "Promptliv",
+      },
+      image: { "@id": "https://www.promptliv.com/#logo" },
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://www.promptliv.com/#website",
+      url: "https://www.promptliv.com",
+      name: "Promptliv",
+      publisher: { "@id": "https://www.promptliv.com/#organization" },
+    },
+    {
       "@type": "WebApplication",
       "@id": "https://www.promptliv.com/#webapp",
       name: "Promptliv",
