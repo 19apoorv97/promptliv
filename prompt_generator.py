@@ -44,9 +44,17 @@ CLARIFYING_QUESTIONS_IMPROVE_PROMPT = """A user wants to improve an existing AI 
 {prompt}
 </existing_prompt>
 
-Identify the information gaps that would most significantly change how the prompt is improved — things like intended audience, missing depth, desired output format, or tone. Ask only the gaps that, if unanswered, would lead to a fundamentally different improvement.
+Your job is to help rewrite a BETTER PROMPT — not to answer or perform the task the prompt describes. Every question must clarify HOW to improve the prompt, never what the prompt's output should contain.
 
-Output ONLY up to 3 questions as a numbered list, one per line. Each question should offer 2–4 concrete answer options inline (e.g. "More structured / More concise / Add examples"). No preamble, no commentary."""
+Read the existing prompt closely and find the substantive details it leaves missing or vague — the specifics that, once known, would let you make the prompt concrete instead of generic. Look especially for underspecified:
+- the actual subject the prompt is about (the specific product, service, topic, or system — not just its category)
+- who the end users or audience are
+- what sets it apart — its key angle, focus, or differentiator
+- how it is used, delivered, or operates
+
+Ask only about dimensions the prompt currently leaves open. Skip anything it already states clearly, anything safely inferred, and anything that would not change the rewrite. Tailor each question to this specific prompt's content rather than asking in the abstract.
+
+Output ONLY up to 2 questions as a numbered list, one per line, ordered highest to lowest impact. Each question must offer 2–4 concrete answer options inline, separated by " / " (e.g. "Developers / Enterprises / Students / General public"). No preamble, no commentary, and no line breaks within a question."""
 
 CONTEXT_SECTION = """
 Here is additional context provided by the user that should inform the prompt:

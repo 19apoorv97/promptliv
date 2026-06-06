@@ -36,9 +36,24 @@ const CLARIFYING_QUESTIONS_IMPROVE_PROMPT = `A user wants to improve an existing
 {prompt}
 </existing_prompt>
 
-Identify the information gaps that would most significantly change how the prompt is improved — things like intended audience, missing depth, desired output format, or tone. Ask only the gaps that, if unanswered, would lead to a fundamentally different improvement.
+<feedback>
+{feedback}
+</feedback>
 
-Output ONLY up to 3 questions as a numbered list, one per line. Each question should offer 2–4 concrete answer options inline (e.g. "More structured / More concise / Add examples"). No preamble, no commentary.`;
+Your job is to help rewrite a BETTER PROMPT — not to answer or perform the task the prompt describes. Every question must clarify HOW to improve the prompt, never what the prompt's output should contain.
+
+Treat any feedback above as the primary driver and anchor your questions on resolving it; use the dimensions below to fill remaining gaps.
+
+Read the existing prompt closely and find the substantive details it leaves missing or vague — the specifics that, once known, would let you make the prompt concrete instead of generic. Look especially for underspecified:
+- the actual subject the prompt is about (the specific product, service, topic, or system — not just its category)
+- who the end users or audience are
+- what sets it apart — its key angle, focus, or differentiator
+- how it is used, delivered, or operates
+
+Ask only about dimensions the prompt currently leaves open. Skip anything it already states clearly, anything safely inferred, and anything that would not change the rewrite. Tailor each question to this specific prompt's content rather than asking in the abstract.
+
+Output ONLY up to 2 questions as a numbered list, one per line, ordered highest to lowest impact. Each question must offer 2–4 concrete answer options inline, separated by " / " (e.g. "Developers / Enterprises / Students / General public"). No preamble, no commentary, and no line breaks within a question.
+`;
 
 const CONTEXT_SECTION = `
 Here is additional context provided by the user that should inform the prompt:
@@ -73,18 +88,7 @@ Here is the task description provided by the user:
 {context_section}
 Generate a complete, ready-to-use prompt template for this task. Output only the prompt itself — no preamble, explanation, or commentary. The prompt should be written in second person.`;
 
-const IMPROVE_META_PROMPT = `Your task is to improve an existing prompt by making it clearer, more structured, and more effective.
-
-Follow these improvement steps:
-
-<steps>
-1. **Identify issues**: Find ambiguities, missing instructions, or structural weaknesses.
-2. **Add structure**: Use XML tags to organize sections (context, task, format, examples).
-3. **Add chain-of-thought**: Insert reasoning instructions if the task is complex.
-4. **Improve examples**: If examples exist, enhance them to show step-by-step reasoning.
-5. **Clarify output format**: Make the expected output format explicit and unambiguous.
-6. **Handle edge cases**: Add instructions for likely edge cases or failure modes.
-</steps>
+const IMPROVE_META_PROMPT = `Your task is to rewrite an existing prompt so it is clearer, better structured, and more effective — while preserving its original intent and any {{double_brace}} placeholders.
 
 Here is the existing prompt to improve:
 
@@ -92,7 +96,18 @@ Here is the existing prompt to improve:
 {prompt}
 </existing_prompt>
 {context_section}{feedback_section}
-Output only the improved prompt — no preamble, explanation, or commentary.`;
+Your single most important objective is to resolve the feedback and user context provided above (if any). Make every change in service of that goal:
+
+<steps>
+1. **Address the feedback first**: Treat the feedback and user context as the primary specification for this rewrite. Identify exactly what they ask for and make sure the new prompt fully satisfies it.
+2. **Fix what blocks that goal**: Resolve the ambiguities, missing instructions, or structural weaknesses that stand in the way — leave working parts alone.
+3. **Add structure where it helps**: Use XML tags to organize sections (context, task, format, examples) only when it improves clarity, not as decoration.
+4. **Add reasoning if warranted**: Insert chain-of-thought instructions when the task is genuinely complex; omit them when they would only add length.
+5. **Sharpen examples and output format**: Improve existing examples and make the expected output format explicit and unambiguous.
+6. **Handle likely edge cases**: Add brief instructions for probable failure modes without bloating the prompt.
+</steps>
+
+Preserve the original task, voice, and every {{placeholder}} unless the feedback explicitly calls for changing them. Output only the improved prompt — no preamble, explanation, or commentary.`;
 
 const FEEDBACK_SECTION = `
 Here is feedback about what is currently wrong or could be better:
@@ -173,11 +188,13 @@ async function callLLM(p: ResolvedProvider, system: string, user: string): Promi
 // ---------------------------------------------------------------------------
 
 export async function getClarifyingQuestions(
-  p: ResolvedProvider, taskOrPrompt: string, mode: string
+  p: ResolvedProvider, taskOrPrompt: string, mode: string, feedback = ""
 ): Promise<string[]> {
   const user = mode === "generate"
     ? CLARIFYING_QUESTIONS_GENERATE_PROMPT.replace("{task}", taskOrPrompt)
-    : CLARIFYING_QUESTIONS_IMPROVE_PROMPT.replace("{prompt}", taskOrPrompt);
+    : CLARIFYING_QUESTIONS_IMPROVE_PROMPT
+        .replace("{prompt}", taskOrPrompt)
+        .replace("{feedback}", feedback || "(The user did not provide specific written feedback.)");
   const raw = await callLLM(p, SYSTEM_CLARIFY, user);
   return raw
     .split("\n")

@@ -372,6 +372,7 @@ export default function Home() {
           model,
           task_or_prompt: taskOrPrompt,
           mode,
+          feedback: mode === "improve" ? feedback : undefined,
           base_url: baseUrl || undefined,
           byok_key: byokKey || null,
           byok_provider: byokKey ? byokProvider : null,
@@ -398,7 +399,7 @@ export default function Home() {
       setError("Network error. Is the backend running on port 8000?");
       setLoading(false);
     }
-  }, [mode, task, prompt, provider, model, baseUrl, byokKey, byokProvider, executeGenerate]);
+  }, [mode, task, prompt, feedback, provider, model, baseUrl, byokKey, byokProvider, executeGenerate]);
 
   const handleSubmit = useCallback(async () => {
     const pairs: string[] = [];
