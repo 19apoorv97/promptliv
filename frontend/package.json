@@ -8,7 +8,8 @@
     "start": "next start"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.92.0",
+    "@anthropic-ai/claude-agent-sdk": "^0.3.173",
+    "@anthropic-ai/sdk": "^0.104.1",
     "next": "14.2.3",
     "openai": "^6.35.0",
     "react": "^18.3.1",

@@ -128,6 +128,8 @@ const SYSTEM_CLARIFY  = "You are an expert prompt engineer. Your only output is 
 interface ResolvedProvider {
   type: "anthropic" | "openai";
   apiKey: string;
+  /** Use the Claude Agent SDK (Claude Code subscription via CLAUDE_CODE_OAUTH_TOKEN) instead of the API */
+  useAgentSdk?: boolean;
   baseUrl?: string;
   model: string;
 }
@@ -145,11 +147,19 @@ export function resolveProvider(body: Record<string, unknown>): ResolvedProvider
   if (!model) throw new Error("No model specified and provider has no default model.");
 
   const apiKey = byokKey ?? process.env[cfg.env_key] ?? "";
-  if (!apiKey) throw new Error(`API key not configured. Set ${cfg.env_key} in environment.`);
+  const useAgentSdk = providerKey === "anthropic" && !apiKey && !!process.env.CLAUDE_CODE_OAUTH_TOKEN;
+  if (!apiKey && !useAgentSdk) {
+    throw new Error(
+      providerKey === "anthropic"
+        ? `API key not configured. Set ${cfg.env_key} or CLAUDE_CODE_OAUTH_TOKEN in environment.`
+        : `API key not configured. Set ${cfg.env_key} in environment.`
+    );
+  }
 
   return {
     type: providerKey === "anthropic" ? "anthropic" : "openai",
     apiKey,
+    useAgentSdk,
     baseUrl: baseUrl ?? cfg.base_url,
     model,
   };
@@ -159,7 +169,32 @@ export function resolveProvider(body: Record<string, unknown>): ResolvedProvider
 // LLM call
 // ---------------------------------------------------------------------------
 
+// Claude Code subscription path: runs through the Claude Agent SDK, which is
+// the supported way to use a CLAUDE_CODE_OAUTH_TOKEN (setup-token) credential.
+async function callAgentSdk(p: ResolvedProvider, system: string, user: string): Promise<string> {
+  const { query } = await import("@anthropic-ai/claude-agent-sdk");
+  const q = query({
+    prompt: user,
+    options: {
+      model: p.model,
+      systemPrompt: system,
+      maxTurns: 1,
+      allowedTools: [],
+    },
+  });
+  for await (const message of q) {
+    if (message.type === "result") {
+      if (message.subtype === "success") return message.result;
+      throw new Error(`Agent SDK error: ${message.subtype}`);
+    }
+  }
+  throw new Error("Agent SDK returned no result.");
+}
+
 async function callLLM(p: ResolvedProvider, system: string, user: string): Promise<string> {
+  if (p.useAgentSdk) {
+    return callAgentSdk(p, system, user);
+  }
   if (p.type === "anthropic") {
     const client = new Anthropic({ apiKey: p.apiKey });
     const res = await client.messages.create({
