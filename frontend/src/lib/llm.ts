@@ -199,7 +199,7 @@ async function callLLM(p: ResolvedProvider, system: string, user: string): Promi
     const client = new Anthropic({ apiKey: p.apiKey });
     const res = await client.messages.create({
       model: p.model,
-      max_tokens: 4096,
+      max_tokens: 16000,
       system,
       messages: [{ role: "user", content: user }],
     });
@@ -208,7 +208,7 @@ async function callLLM(p: ResolvedProvider, system: string, user: string): Promi
     const client = new OpenAI({ apiKey: p.apiKey, ...(p.baseUrl ? { baseURL: p.baseUrl } : {}) });
     const res = await client.chat.completions.create({
       model: p.model,
-      max_tokens: 4096,
+      max_tokens: 16000,
       messages: [
         { role: "system", content: system },
         { role: "user", content: user },
